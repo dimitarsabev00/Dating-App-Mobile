@@ -1,22 +1,24 @@
 import { useNavigation } from "@react-navigation/native";
-import React, {
-  SetStateAction,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Text, View, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "tailwind-react-native-classnames";
 import { useAuth } from "../contexts/AuthContext";
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
-import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { db } from "../configs/firebase";
 
 const Home = () => {
-  const [profiles, setProfiles] = useState<SetStateAction<any[]>>([]);
+  const [profiles, setProfiles] = useState([]);
   const navigation = useNavigation<any>();
   const { user, logout } = useAuth();
   const swipeRef = useRef<any>(null);
@@ -32,22 +34,59 @@ const Home = () => {
     let unsub;
 
     const fetchCards = async () => {
-      unsub = onSnapshot(collection(db, "users"), (snapShot) => {
-        setProfiles(
-          snapShot.docs
-            .filter((doc) => doc.id !== user.uid)
-            .map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }))
-        );
-      });
+      const passes = await getDocs(
+        collection(db, "users", user.uid, "passes")
+      ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
+
+      const swipes = await getDocs(
+        collection(db, "users", user.uid, "swipes")
+      ).then((snapShot) => snapShot.docs.map((doc) => doc.id));
+
+      const passedUserIds = passes.length > 0 ? passes : ["temp"];
+      const swipedUserIds = swipes.length > 0 ? swipes : ["temp"];
+
+      unsub = onSnapshot(
+        query(
+          collection(db, "users"),
+          where("id", "not-in", [...passedUserIds, ...swipedUserIds])
+        ),
+        (snapShot) => {
+          setProfiles(
+            snapShot.docs
+              .filter((doc) => doc.id !== user.uid)
+              .map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              }))
+          );
+        }
+      );
     };
 
     fetchCards();
 
     return unsub;
   }, []);
+
+  const swipeLeft = (cardIndex: number) => {
+    if (!profiles[cardIndex]) {
+      return;
+    }
+
+    const userSwiped = profiles[cardIndex];
+
+    setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
+  };
+  const swipeRight = (cardIndex: number) => {
+    if (!profiles[cardIndex]) {
+      return;
+    }
+
+    const userSwiped = profiles[cardIndex];
+
+    setDoc(doc(db, "users", user.uid, "swipes", userSwiped.id), userSwiped);
+  };
+
   return (
     <SafeAreaView style={tw.style("flex-1 mt-6")}>
       {/* Header  */}
@@ -91,10 +130,10 @@ const Home = () => {
           animateCardOpacity
           verticalSwipe={false}
           onSwipedLeft={(cardIndex) => {
-            console.log("Swipe Pass", cardIndex);
+            swipeLeft(cardIndex);
           }}
           onSwipedRight={(cardIndex) => {
-            console.log("Swipe Match", cardIndex);
+            swipeRight(cardIndex);
           }}
           backgroundColor="#4FD0E9"
           overlayLabels={{
