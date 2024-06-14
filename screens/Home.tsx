@@ -66,6 +66,7 @@ const Home = () => {
             fontWeight: "600",
             color: "black",
           }}
+          onPress={() => navigation.navigate("Modal")}
         >
           Dating App
         </Text>
