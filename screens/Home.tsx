@@ -1,51 +1,53 @@
 import { useNavigation } from "@react-navigation/native";
-import React, { useRef } from "react";
-import {
-  Text,
-  Button,
-  View,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-} from "react-native";
+import React, {
+  SetStateAction,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { Text, View, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "tailwind-react-native-classnames";
 import { useAuth } from "../contexts/AuthContext";
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
-
-const DUMMY_DATA = [
-  {
-    displayName: "Anton Jeejo",
-    job: "Software Engineer",
-    photoURL:
-      "https://pbs.twimg.com/profile_images/1540318789061197825/RiJ0V1sR_400x400.jpg",
-    age: 23,
-    id: 1,
-  },
-  {
-    displayName: "Mark Zuckerberg",
-    job: "Programmer",
-    photoURL:
-      "https://upload.wikimedia.org/wikipedia/commons/1/18/Mark_Zuckerberg_F8_2019_Keynote_%2832830578717%29_%28cropped%29.jpg",
-    age: 39,
-    id: 2,
-  },
-  {
-    displayName: "Justin Mateen",
-    job: "Software Developer",
-    photoURL:
-      "https://i.insider.com/606730e3856cd700198a2dd1?width=1136&format=jpeg",
-    age: 37,
-    id: 3,
-  },
-];
+import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { db } from "../configs/firebase";
 
 const Home = () => {
+  const [profiles, setProfiles] = useState<SetStateAction<any[]>>([]);
   const navigation = useNavigation<any>();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const swipeRef = useRef<any>(null);
 
+  useLayoutEffect(() => {
+    onSnapshot(doc(db, "users", user.uid), (snapShot) => {
+      if (!snapShot.exists()) {
+        navigation.navigate("Modal");
+      }
+    });
+  }, []);
+  useEffect(() => {
+    let unsub;
+
+    const fetchCards = async () => {
+      unsub = onSnapshot(collection(db, "users"), (snapShot) => {
+        setProfiles(
+          snapShot.docs
+            .filter((doc) => doc.id !== user.uid)
+            .map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }))
+        );
+      });
+    };
+
+    fetchCards();
+
+    return unsub;
+  }, []);
   return (
     <SafeAreaView style={tw.style("flex-1 mt-6")}>
       {/* Header  */}
@@ -83,7 +85,7 @@ const Home = () => {
           containerStyle={{
             backgroundColor: "transparent",
           }}
-          cards={DUMMY_DATA}
+          cards={profiles}
           stackSize={5}
           cardIndex={0}
           animateCardOpacity
