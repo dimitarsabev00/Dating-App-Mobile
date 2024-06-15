@@ -2,7 +2,13 @@ import { View, Text } from "react-native";
 import React from "react";
 import tw from "tailwind-react-native-classnames";
 
-const SenderMessage = ({ message }) => {
+type SenderMessageProps = {
+  message: {
+    message: string;
+  };
+};
+
+const SenderMessage: React.FC<SenderMessageProps> = ({ message }) => {
   return (
     <View
       style={tw.style(

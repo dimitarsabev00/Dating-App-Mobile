@@ -3,10 +3,14 @@ import { View, Text, Image } from "react-native";
 import tw from "tailwind-react-native-classnames";
 
 type ReceiverMessageProps = {
-  message: string;
+  message: {
+    photoURL: string;
+    message: string;
+  };
 };
 
 const ReceiverMessage: React.FC<ReceiverMessageProps> = ({ message }) => {
+  console.log(message);
   return (
     <View
       style={tw.style(
