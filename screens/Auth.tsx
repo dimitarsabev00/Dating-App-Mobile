@@ -11,7 +11,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../configs/firebase";
 
-const Login = () => {
+const Auth = () => {
   const [type, setType] = useState("signIn");
 
   const [name, setName] = useState("");
@@ -161,4 +161,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Auth;

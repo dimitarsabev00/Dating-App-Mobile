@@ -2,12 +2,13 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 
-import { ChatDetails, Chats, Home, Login, Match, Modal } from "../screens";
+import { Auth, ChatDetails, Chats, Home, Match, Modal } from "../screens";
 
 const Stack = createNativeStackNavigator();
 
 const StackNavigator = () => {
   const { user } = useAuth();
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
@@ -24,6 +25,7 @@ const StackNavigator = () => {
           >
             <Stack.Screen name="Modal" component={Modal} />
           </Stack.Group>
+
           <Stack.Group
             screenOptions={{
               presentation: "transparentModal",
@@ -33,7 +35,7 @@ const StackNavigator = () => {
           </Stack.Group>
         </>
       ) : (
-        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Auth" component={Auth} />
       )}
     </Stack.Navigator>
   );
