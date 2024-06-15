@@ -39,7 +39,7 @@ const ChatItem = ({ matchDetails }) => {
       style={tw.style(
         "flex-row items-center py-3 px-5 bg-white mx-3 my-1 rounded-lg shadow-lg"
       )}
-        onPress={() => navigation.navigate("ChatDetails", { matchDetails })}
+      onPress={() => navigation.navigate("ChatDetails", { matchDetails })}
     >
       <Image
         style={tw.style("rounded-full h-16 w-16 mr-4")}
