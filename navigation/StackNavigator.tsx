@@ -2,8 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 
-import { Chats, Home, Login, Match, Modal } from "../screens";
-
+import { ChatDetails, Chats, Home, Login, Match, Modal } from "../screens";
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +15,7 @@ const StackNavigator = () => {
           <Stack.Group>
             <Stack.Screen name="Home" component={Home} />
             <Stack.Screen name="Chats" component={Chats} />
+            <Stack.Screen name="ChatDetails" component={ChatDetails} />
           </Stack.Group>
           <Stack.Group
             screenOptions={{
