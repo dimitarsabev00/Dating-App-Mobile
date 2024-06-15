@@ -1,11 +1,27 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp, NavigationProp } from "@react-navigation/native";
 import tw from "tailwind-react-native-classnames";
 
+type RootStackParamList = {
+  Chats: undefined;
+};
+
+type MatchScreenParams = {
+  loggedInProfile: {
+    photoURL: string;
+  };
+  userSwiped: {
+    displayName: string;
+    photoURL: string;
+  };
+};
+
+type MatchScreenRouteProp = RouteProp<{ Match: MatchScreenParams }, "Match">;
+
 const Match = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const route = useRoute<MatchScreenRouteProp>();
 
   const { loggedInProfile, userSwiped } = route.params;
 
