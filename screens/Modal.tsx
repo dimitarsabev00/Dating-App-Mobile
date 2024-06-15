@@ -9,41 +9,48 @@ import {
 import React, { useState } from "react";
 import tw from "tailwind-react-native-classnames";
 import { doc, setDoc } from "firebase/firestore";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useAuth } from "../contexts/AuthContext";
 import { db, timestamp } from "../configs/firebase";
 
+type RootStackParamList = {
+  Home: undefined;
+};
+
 const Modal = () => {
   const { user } = useAuth();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [image, setImage] = useState("");
   const [age, setAge] = useState("");
   const [job, setJob] = useState("");
 
   const incompleteForm = !image || !age || !job;
 
-  const updateUserProfile = () => {
-      setDoc(doc(db, "users", user.uid), {
-        id: user.uid,
-        displayName: user.displayName,
-        photoURL: image,
-        job,
-        age,
-        timestamp,
-      })
-        .then(() => {
-          navigation.navigate("Home");
-        })
-        .catch((err) => {
-          Alert.alert("Error", err.message);
+  const updateUserProfile = async () => {
+    if (user) {
+      try {
+        await setDoc(doc(db, "users", user.uid), {
+          id: user.uid,
+          displayName: user.displayName,
+          photoURL: image,
+          job,
+          age,
+          timestamp,
         });
+        navigation.navigate("Home");
+      } catch (err: any) {
+        Alert.alert("Error", err.message);
+      }
+    }
   };
 
   return (
     <View style={tw.style("flex-1 items-center pt-1")}>
-      <Text style={tw.style("text-xl text-gray-500 p-2 font-bold mt-20")}>
-        Welcome {user.displayName}
-      </Text>
+      {user && (
+        <Text style={tw.style("text-xl text-gray-500 p-2 font-bold mt-20")}>
+          Welcome {user.displayName}
+        </Text>
+      )}
 
       <Text style={tw.style("text-center p-4 font-bold text-red-400")}>
         Step 1: The Profile Pic
