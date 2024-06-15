@@ -9,19 +9,21 @@ import Swiper from "react-native-deck-swiper";
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   query,
   setDoc,
   where,
 } from "firebase/firestore";
-import { db } from "../configs/firebase";
+import { db, timestamp } from "../configs/firebase";
+import { generateId } from "../utils/helpers";
 
 const Home = () => {
   const [profiles, setProfiles] = useState([]);
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation();
   const { user, logout } = useAuth();
-  const swipeRef = useRef<any>(null);
+  const swipeRef = useRef(null);
 
   useLayoutEffect(() => {
     onSnapshot(doc(db, "users", user.uid), (snapShot) => {
@@ -30,6 +32,7 @@ const Home = () => {
       }
     });
   }, []);
+
   useEffect(() => {
     let unsub;
 
@@ -77,16 +80,53 @@ const Home = () => {
 
     setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
   };
-  const swipeRight = (cardIndex: number) => {
-    if (!profiles[cardIndex]) {
-      return;
+  const swipeRight = async (cardIndex: number) => {
+    try {
+      if (!profiles[cardIndex]) {
+        return;
+      }
+
+      const userSwiped = profiles[cardIndex];
+      const loggedInProfile = await (
+        await getDoc(doc(db, "users", user.uid))
+      ).data();
+
+
+      getDoc(doc(db, "users", userSwiped.id, "swipes", user.uid)).then(
+        (docSnap) => {
+          if (docSnap.exists()) {
+            setDoc(
+              doc(db, "users", user.uid, "swipes", userSwiped.id),
+              userSwiped
+            );
+
+            setDoc(doc(db, "matches", generateId(user.uid, userSwiped.id)), {
+              users: {
+                [user.uid]: loggedInProfile,
+                [userSwiped.id]: userSwiped,
+              },
+              usersMatched: [user.uid, userSwiped.id],
+              timestamp,
+            });
+
+
+            navigation.navigate("Match", {
+              loggedInProfile,
+              userSwiped,
+            });
+            
+          } else {
+            setDoc(
+              doc(db, "users", user.uid, "swipes", userSwiped.id),
+              userSwiped
+            );
+          }
+        }
+      );
+    } catch (error) {
+      console.log(error);
     }
-
-    const userSwiped = profiles[cardIndex];
-
-    setDoc(doc(db, "users", user.uid, "swipes", userSwiped.id), userSwiped);
   };
-
   return (
     <SafeAreaView style={tw.style("flex-1 mt-6")}>
       {/* Header  */}
