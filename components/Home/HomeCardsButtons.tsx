@@ -3,11 +3,15 @@ import React from "react";
 import tw from "tailwind-react-native-classnames";
 import { Entypo } from "@expo/vector-icons";
 
-const HomeCardsButtons = ({ swipeRef }) => {
+type HomeCardsButtonsProps = {
+  swipeRef: React.RefObject<{ swipeLeft: () => void; swipeRight: () => void }>;
+};
+
+const HomeCardsButtons: React.FC<HomeCardsButtonsProps> = ({ swipeRef }) => {
   return (
     <View style={tw.style("flex flex-row justify-evenly")}>
       <TouchableOpacity
-        onPress={() => swipeRef.current.swipeLeft()}
+        onPress={() => swipeRef.current?.swipeLeft()}
         style={tw.style(
           "items-center justify-center rounded-full w-16 h-16 bg-red-200"
         )}
@@ -15,7 +19,7 @@ const HomeCardsButtons = ({ swipeRef }) => {
         <Entypo name="cross" size={24} color="red" />
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => swipeRef.current.swipeRight()}
+        onPress={() => swipeRef.current?.swipeRight()}
         style={tw.style(
           "items-center justify-center rounded-full w-16 h-16 bg-green-200"
         )}

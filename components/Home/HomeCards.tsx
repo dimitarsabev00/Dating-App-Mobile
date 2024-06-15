@@ -2,66 +2,86 @@ import { View, Text, Image } from "react-native";
 import React from "react";
 import tw from "tailwind-react-native-classnames";
 import Swiper from "react-native-deck-swiper";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { DocumentData, doc, getDoc, setDoc } from "firebase/firestore";
 import { db, timestamp } from "../../configs/firebase";
 import { generateId } from "../../utils/helpers";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { useAuth } from "../../contexts/AuthContext";
+import { Profile } from "../../screens/Home";
 
-const HomeCards = ({ profiles, swipeRef }) => {
-  const navigation = useNavigation();
+export type RootStackParamList = {
+  Home: undefined;
+  Match: {
+    loggedInProfile: DocumentData | undefined;
+    userSwiped: Profile;
+  };
+};
+
+type HomeCardsProps = {
+  profiles: Profile[];
+  swipeRef: React.RefObject<{ swipeLeft: () => void; swipeRight: () => void }>;
+};
+
+const HomeCards: React.FC<HomeCardsProps> = ({ profiles, swipeRef }) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { user } = useAuth();
 
   const swipeLeft = (cardIndex: number) => {
     if (!profiles[cardIndex]) {
       return;
     }
 
-    const userSwiped = profiles[cardIndex];
+    if (user) {
+      const userSwiped = profiles[cardIndex];
 
-    setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
+      setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
+    }
   };
 
   const swipeRight = async (cardIndex: number) => {
-    try {
-      if (!profiles[cardIndex]) {
-        return;
-      }
-
-      const userSwiped = profiles[cardIndex];
-      const loggedInProfile = await (
-        await getDoc(doc(db, "users", user.uid))
-      ).data();
-
-      getDoc(doc(db, "users", userSwiped.id, "swipes", user.uid)).then(
-        (docSnap) => {
-          if (docSnap.exists()) {
-            setDoc(
-              doc(db, "users", user.uid, "swipes", userSwiped.id),
-              userSwiped
-            );
-
-            setDoc(doc(db, "matches", generateId(user.uid, userSwiped.id)), {
-              users: {
-                [user.uid]: loggedInProfile,
-                [userSwiped.id]: userSwiped,
-              },
-              usersMatched: [user.uid, userSwiped.id],
-              timestamp,
-            });
-
-            navigation.navigate("Match", {
-              loggedInProfile,
-              userSwiped,
-            });
-          } else {
-            setDoc(
-              doc(db, "users", user.uid, "swipes", userSwiped.id),
-              userSwiped
-            );
-          }
+    if (user) {
+      try {
+        if (!profiles[cardIndex]) {
+          return;
         }
-      );
-    } catch (error) {
-      console.log(error);
+
+        const userSwiped = profiles[cardIndex];
+        const loggedInProfile = await (
+          await getDoc(doc(db, "users", user.uid))
+        ).data();
+
+        getDoc(doc(db, "users", userSwiped.id, "swipes", user.uid)).then(
+          (docSnap) => {
+            if (docSnap.exists()) {
+              setDoc(
+                doc(db, "users", user.uid, "swipes", userSwiped.id),
+                userSwiped
+              );
+
+              setDoc(doc(db, "matches", generateId(user.uid, userSwiped.id)), {
+                users: {
+                  [user.uid]: loggedInProfile,
+                  [userSwiped.id]: userSwiped,
+                },
+                usersMatched: [user.uid, userSwiped.id],
+                timestamp,
+              });
+
+              navigation.navigate("Match", {
+                loggedInProfile,
+                userSwiped,
+              });
+            } else {
+              setDoc(
+                doc(db, "users", user.uid, "swipes", userSwiped.id),
+                userSwiped
+              );
+            }
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 

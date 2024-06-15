@@ -19,7 +19,7 @@ type RootStackParamList = {
   Modal: undefined;
 };
 
-type Profile = {
+export interface Profile {
   id: string;
   age: string;
   displayName: string;
@@ -29,7 +29,7 @@ type Profile = {
     nanoseconds: number;
     seconds: number;
   };
-};
+}
 
 const Home = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
