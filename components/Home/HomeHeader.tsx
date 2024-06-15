@@ -1,13 +1,18 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import tw from "tailwind-react-native-classnames";
 
+type RootStackParamList = {
+  Modal: undefined;
+  Chats: undefined;
+};
+
 const HomeHeader = () => {
   const { logout } = useAuth();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
     <View style={tw.style("flex-row items-center justify-between px-5")}>
