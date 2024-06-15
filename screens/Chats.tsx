@@ -1,7 +1,7 @@
 import React from "react";
 import { SafeAreaView } from "react-native";
-import tw from "tailwind-react-native-classnames";
 import { ChatsList, HeaderChats } from "../components";
+import tw from "tailwind-react-native-classnames";
 
 const Chats = () => {
   return (
