@@ -2,11 +2,8 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 
-import Home from "../screens/Home";
-import Chats from "../screens/Chats";
-import Login from "../screens/Login";
-import Modal from "../screens/Modal";
-import Match from "../screens/Match";
+import { Chats, Home, Login, Match, Modal } from "../screens";
+
 
 const Stack = createNativeStackNavigator();
 
