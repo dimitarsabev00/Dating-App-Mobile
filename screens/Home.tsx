@@ -92,7 +92,7 @@ const Home = () => {
       if (unsub) unsub();
     };
   }, [user]);
-  console.log(profiles[0].timestamp);
+
   return (
     <SafeAreaView style={tw.style("flex-1")}>
       <HomeHeader />
